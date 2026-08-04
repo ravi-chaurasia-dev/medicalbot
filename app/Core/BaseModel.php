@@ -10,68 +10,70 @@ use PDOStatement;
 abstract class BaseModel
 {
     protected PDO $db;
-
     protected string $table;
 
     public function __construct()
     {
-        $this->db = Database::connection();
+        $this->db = Database::getConnection();
     }
 
-    public function all(string $orderBy = 'id ASC'): array
+    public function all(string $orderBy = 'id DESC'): array
     {
-        $query = sprintf('SELECT * FROM `%s` ORDER BY %s', $this->table, $orderBy);
+        $query = sprintf('SELECT * FROM %s ORDER BY %s', $this->table, $orderBy);
         $statement = $this->db->query($query);
-
         return $statement->fetchAll();
     }
 
-    public function find(int $id): ?array
+    public function findById(int $id): ?array
     {
-        $statement = $this->db->prepare('SELECT * FROM `' . $this->table . '` WHERE id = :id LIMIT 1');
+        $statement = $this->db->prepare(sprintf('SELECT * FROM %s WHERE id = :id LIMIT 1', $this->table));
         $statement->execute(['id' => $id]);
-
-        $data = $statement->fetch();
-
-        return $data !== false ? $data : null;
+        $result = $statement->fetch();
+        return $result === false ? null : $result;
     }
 
     public function create(array $data): int
     {
         $columns = array_keys($data);
         $placeholders = array_map(static fn (string $column): string => ':' . $column, $columns);
-
-        $sql = sprintf(
-            'INSERT INTO `%s` (%s) VALUES (%s)',
+        $statement = $this->db->prepare(sprintf(
+            'INSERT INTO %s (%s) VALUES (%s)',
             $this->table,
-            implode(', ', array_map(static fn (string $column): string => '`' . $column . '`', $columns)),
+            implode(', ', $columns),
             implode(', ', $placeholders)
-        );
+        ));
 
-        $statement = $this->db->prepare($sql);
         $statement->execute($data);
-
         return (int) $this->db->lastInsertId();
     }
 
     public function update(int $id, array $data): bool
     {
         $fields = [];
-        foreach ($data as $column => $value) {
-            $fields[] = '`' . $column . '` = :' . $column;
+        foreach ($data as $key => $value) {
+            $fields[] = sprintf('%s = :%s', $key, $key);
         }
 
-        $sql = sprintf('UPDATE `%s` SET %s WHERE id = :id', $this->table, implode(', ', $fields));
-        $statement = $this->db->prepare($sql);
         $data['id'] = $id;
+        $statement = $this->db->prepare(sprintf(
+            'UPDATE %s SET %s WHERE id = :id',
+            $this->table,
+            implode(', ', $fields)
+        ));
 
         return $statement->execute($data);
     }
 
     public function delete(int $id): bool
     {
-        $statement = $this->db->prepare('DELETE FROM `' . $this->table . '` WHERE id = :id');
-
+        $statement = $this->db->prepare(sprintf('DELETE FROM %s WHERE id = :id', $this->table));
         return $statement->execute(['id' => $id]);
+    }
+
+    protected function query(string $sql, array $params = []): PDOStatement
+    {
+        $statement = $this->db->prepare($sql);
+        $statement->execute($params);
+        return $statement;
     }
 }

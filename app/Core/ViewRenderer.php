@@ -6,32 +6,47 @@ namespace App\Core;
 
 final class ViewRenderer
 {
-    public function render(string $template, array $data = [], ?string $layout = null): string
-    {
-        $templatePath = base_path('resources/views/' . $template . '.php');
-        $layoutPath = $layout !== null ? base_path('resources/views/' . $layout . '.php') : null;
+    private string $viewsPath;
 
-        if (!is_file($templatePath)) {
-            throw new \RuntimeException("View not found: {$template}");
+    public function __construct(string $viewsPath)
+    {
+        $this->viewsPath = rtrim($viewsPath, DIRECTORY_SEPARATOR);
+    }
+
+    public function render(string $template, array $data = [], ?string $layout = 'app'): string
+    {
+        $templateFile = $this->viewsPath . DIRECTORY_SEPARATOR . str_replace('.', DIRECTORY_SEPARATOR, $template) . '.php';
+
+        if (! is_file($templateFile)) {
+            throw new \RuntimeException(sprintf('View file not found: %s', $templateFile));
         }
 
         extract($data, EXTR_SKIP);
-        ob_start();
+        $content = $this->capture($templateFile, $data);
 
-        if ($layoutPath !== null && is_file($layoutPath)) {
-            require $layoutPath;
-            $content = ob_get_clean();
-
-            if ($content === false) {
-                $content = '';
-            }
-
+        if ($layout === null) {
             return $content;
         }
 
-        require $templatePath;
-        $content = ob_get_clean();
+        $layoutFile = $this->viewsPath . DIRECTORY_SEPARATOR . 'layouts' . DIRECTORY_SEPARATOR . $layout . '.php';
 
-        return $content === false ? '' : $content;
+        if (! is_file($layoutFile)) {
+            throw new \RuntimeException(sprintf('Layout file not found: %s', $layoutFile));
+        }
+
+        $viewContent = $content;
+        extract(['content' => $viewContent, 'pageTitle' => $data['pageTitle'] ?? 'MediAI']);
+
+        ob_start();
+        require $layoutFile;
+        return (string) ob_get_clean();
+    }
+
+    private function capture(string $templateFile, array $data): string
+    {
+        extract($data, EXTR_SKIP);
+        ob_start();
+        require $templateFile;
+        return (string) ob_get_clean();
     }
 }

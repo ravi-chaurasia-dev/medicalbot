@@ -1,38 +1,48 @@
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('themeToggle');
+    const root = document.documentElement;
     const storedTheme = localStorage.getItem('mediai-theme');
 
+    const applyTheme = (theme) => {
+        root.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('mediai-theme', theme);
+        if (themeToggle) {
+            const icon = themeToggle.querySelector('i');
+            if (icon) {
+                icon.className = theme === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
+            }
+        }
+    };
+
     if (storedTheme) {
-        document.body.setAttribute('data-theme', storedTheme);
+        applyTheme(storedTheme);
     }
 
     if (themeToggle) {
         themeToggle.addEventListener('click', () => {
-            const currentTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            document.body.setAttribute('data-theme', currentTheme);
-            localStorage.setItem('mediai-theme', currentTheme);
+            const currentTheme = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+            applyTheme(currentTheme);
         });
     }
 
-    const loader = document.createElement('div');
-    loader.className = 'loading-overlay';
-    loader.innerHTML = '<div class="loader"></div>';
-    document.body.appendChild(loader);
-
-    document.addEventListener('click', (event) => {
-        const target = event.target instanceof HTMLElement ? event.target.closest('a, button[type="submit"]') : null;
-        if (!target) {
-            return;
+    const showLoader = () => {
+        const overlay = document.querySelector('.loading-overlay');
+        if (overlay) {
+            overlay.classList.add('visible');
         }
+    };
 
-        if (target.tagName === 'A' && target.getAttribute('href')?.startsWith('#')) {
-            return;
-        }
-
-        loader.classList.add('show');
-    });
-
-    window.addEventListener('load', () => {
-        loader.classList.remove('show');
+    document.querySelectorAll('a, button[type="submit"]').forEach((element) => {
+        element.addEventListener('click', () => {
+            if (element.getAttribute('href') === '#') {
+                return;
+            }
+            if (element.tagName === 'BUTTON' && element.type === 'submit') {
+                showLoader();
+            }
+            if (element.tagName === 'A' && element.getAttribute('href') && ! element.getAttribute('href').startsWith('#')) {
+                showLoader();
+            }
+        });
     });
 });

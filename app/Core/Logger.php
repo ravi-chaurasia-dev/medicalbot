@@ -5,70 +5,78 @@ declare(strict_types=1);
 namespace App\Core;
 
 use DateTimeImmutable;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerTrait;
+use Psr\Log\AbstractLogger;
+use RuntimeException;
 
-class Logger implements LoggerInterface
+final class Logger extends AbstractLogger
 {
-    use LoggerTrait;
-
+    private static ?self $instance = null;
     private string $logPath;
 
-    public function __construct(?string $logPath = null)
+    private function __construct(string $logPath)
     {
-        $this->logPath = $logPath ?? Config::get('app.logging.path', storage_path('logs/app.log'));
-        $directory = dirname($this->logPath);
+        $this->logPath = $logPath;
 
-        if (!is_dir($directory)) {
-            mkdir($directory, 0775, true);
+        $directory = dirname($this->logPath);
+        if (! is_dir($directory) && ! mkdir($directory, 0775, true) && ! is_dir($directory)) {
+            throw new RuntimeException(sprintf('Unable to create log directory: %s', $directory));
         }
     }
 
-    public static function info(string $message, array $context = []): void
+    public static function initialize(): self
     {
-        $logger = new self();
-        $logger->info($message, $context);
+        $path = Config::get('app.log.path', dirname(__DIR__, 2) . '/storage/logs/app.log');
+
+        if (self::$instance === null) {
+            self::$instance = new self($path);
+        }
+
+        return self::$instance;
     }
 
-    public static function error(string $message, array $context = []): void
+    public static function getInstance(): self
     {
-        $logger = new self();
-        $logger->error($message, $context);
+        return self::$instance ?? self::initialize();
     }
 
-    public function emergency(string $message, array $context = []): void
+    public function emergency(string|\Stringable $message, array $context = []): void
     {
-        $this->write('EMERGENCY', $message, $context);
+        $this->write('EMERGENCY', (string) $message, $context);
     }
 
-    public function alert(string $message, array $context = []): void
+    public function alert(string|\Stringable $message, array $context = []): void
     {
-        $this->write('ALERT', $message, $context);
+        $this->write('ALERT', (string) $message, $context);
     }
 
-    public function critical(string $message, array $context = []): void
+    public function critical(string|\Stringable $message, array $context = []): void
     {
-        $this->write('CRITICAL', $message, $context);
+        $this->write('CRITICAL', (string) $message, $context);
     }
 
-    public function warning(string $message, array $context = []): void
+    public function error(string|\Stringable $message, array $context = []): void
     {
-        $this->write('WARNING', $message, $context);
+        $this->write('ERROR', (string) $message, $context);
     }
 
-    public function notice(string $message, array $context = []): void
+    public function warning(string|\Stringable $message, array $context = []): void
     {
-        $this->write('NOTICE', $message, $context);
+        $this->write('WARNING', (string) $message, $context);
     }
 
-    public function info(string $message, array $context = []): void
+    public function notice(string|\Stringable $message, array $context = []): void
     {
-        $this->write('INFO', $message, $context);
+        $this->write('NOTICE', (string) $message, $context);
     }
 
-    public function debug(string $message, array $context = []): void
+    public function info(string|\Stringable $message, array $context = []): void
     {
-        $this->write('DEBUG', $message, $context);
+        $this->write('INFO', (string) $message, $context);
+    }
+
+    public function debug(string|\Stringable $message, array $context = []): void
+    {
+        $this->write('DEBUG', (string) $message, $context);
     }
 
     public function log($level, string|\Stringable $message, array $context = []): void
@@ -76,12 +84,12 @@ class Logger implements LoggerInterface
         $this->write(strtoupper((string) $level), (string) $message, $context);
     }
 
-    public function write(string $level, string $message, array $context = []): void
+    private function write(string $level, string $message, array $context): void
     {
         $timestamp = (new DateTimeImmutable())->format('Y-m-d H:i:s');
-        $contextString = $context === [] ? '' : ' ' . json_encode($context, JSON_THROW_ON_ERROR);
-        $entry = sprintf('[%s] %s %s%s' . PHP_EOL, $timestamp, $level, $message, $contextString);
+        $contextString = $context === [] ? '' : ' ' . json_encode($context, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        $line = sprintf('[%s] %s %s%s' . PHP_EOL, $timestamp, $level, $message, $contextString);
 
-        file_put_contents($this->logPath, $entry, FILE_APPEND | LOCK_EX);
+        file_put_contents($this->logPath, $line, FILE_APPEND | LOCK_EX);
     }
 }

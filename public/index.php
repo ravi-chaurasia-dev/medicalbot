@@ -2,13 +2,10 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/config/bootstrap.php';
+require_once dirname(__DIR__) . '/bootstrap/app.php';
 
-use App\Core\App;
-use App\Core\Request;
-use App\Core\Router;
+use App\Core\ErrorHandler;
 
-$app = App::getInstance();
-$app->setRequest(Request::fromGlobals());
-$app->setRouter(require dirname(__DIR__) . '/routes/web.php');
+ErrorHandler::register();
+$app = require dirname(__DIR__) . '/bootstrap/app.php';
 $app->run();

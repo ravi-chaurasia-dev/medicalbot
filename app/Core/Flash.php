@@ -6,38 +6,35 @@ namespace App\Core;
 
 final class Flash
 {
-    public static function add(string $type, string $message): void
+    public static function set(string $key, string $message, string $type = 'info'): void
     {
-        $flash = Session::get('flash', []);
-        $flash[] = ['type' => $type, 'message' => $message];
-        Session::put('flash', $flash);
+        $flashes = SessionManager::get('flash_messages', []);
+        $flashes[] = [
+            'key' => $key,
+            'type' => $type,
+            'message' => $message,
+        ];
+
+        SessionManager::set('flash_messages', $flashes);
     }
 
-    public static function get(): array
+    public static function get(string $key = null): array
     {
-        $flash = Session::get('flash', []);
-        Session::forget('flash');
+        $messages = SessionManager::get('flash_messages', []);
 
-        return $flash;
+        if ($key !== null) {
+            $messages = array_values(array_filter($messages, static fn (array $item): bool => $item['key'] === $key));
+        }
+
+        if ($messages !== []) {
+            SessionManager::remove('flash_messages');
+        }
+
+        return $messages;
     }
 
-    public static function success(string $message): void
+    public static function has(string $key = null): bool
     {
-        self::add('success', $message);
-    }
-
-    public static function error(string $message): void
-    {
-        self::add('danger', $message);
-    }
-
-    public static function warning(string $message): void
-    {
-        self::add('warning', $message);
-    }
-
-    public static function info(string $message): void
-    {
-        self::add('info', $message);
+        return self::get($key) !== [];
     }
 }

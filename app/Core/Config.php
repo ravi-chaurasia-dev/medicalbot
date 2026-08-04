@@ -8,20 +8,16 @@ final class Config
 {
     private static array $config = [];
 
-    public static function load(string $configPath): void
+    public static function loadAll(string $path): void
     {
-        $files = glob($configPath . '/*.php');
+        $files = glob(rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '*.php');
 
         if ($files === false) {
             return;
         }
 
         foreach ($files as $file) {
-            if (basename($file) === 'bootstrap.php') {
-                continue;
-            }
-
-            $name = pathinfo($file, PATHINFO_FILENAME);
+            $name = basename($file, '.php');
             $data = require $file;
 
             if (is_array($data)) {
@@ -36,7 +32,7 @@ final class Config
         $value = self::$config;
 
         foreach ($segments as $segment) {
-            if (!is_array($value) || !array_key_exists($segment, $value)) {
+            if (! is_array($value) || ! array_key_exists($segment, $value)) {
                 return $default;
             }
 

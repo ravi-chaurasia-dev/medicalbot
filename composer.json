@@ -1,5 +1,5 @@
 {
-    "name": "medi-ai/medicalbot",
+    "name": "mediai/mediai",
     "description": "MediAI - AI Healthcare Assistant foundation architecture",
     "type": "project",
     "license": "MIT",
@@ -10,26 +10,34 @@
         }
     ],
     "require": {
-        "php": "^8.3",
+        "php": ">=8.3",
         "phpmailer/phpmailer": "^6.9",
-        "vlucas/phpdotenv": "^5.0"
+        "vlucas/phpdotenv": "^5.4"
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/"
+            "App\\": "app/",
+            "Config\\": "config/",
+            "Database\\": "database/"
         },
         "files": [
-            "app/Core/helpers.php"
+            "app/Helpers/helpers.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "App\\Tests\\": "tests/"
+        }
     },
     "config": {
         "optimize-autoloader": true,
         "sort-packages": true,
-        "process-timeout": 1200
+        "platform": {
+            "php": "8.3.0"
+        }
     },
     "scripts": {
-        "post-install-cmd": [
-            "php -r \"if (!file_exists('.env')) { copy('.env.example', '.env'); }\""
-        ]
+        "post-install-cmd": "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+        "post-update-cmd": "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
     }
 }

@@ -11,7 +11,7 @@ final class HomeController extends BaseController
     public function index(): void
     {
         echo $this->view('home.index', [
-            'title' => 'Welcome to MediAI',
-        ]);
+            'pageTitle' => 'Welcome to MediAI',
+        ], 'app');
     }
 }

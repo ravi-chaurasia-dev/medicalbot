@@ -1,0 +1,39 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Core\App;
+use App\Core\Router;
+use App\Core\Config;
+use App\Core\Database;
+use App\Core\Logger;
+use App\Core\SessionManager;
+use Dotenv\Dotenv;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$dotenv = Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->safeLoad();
+
+if (file_exists(dirname(__DIR__) . '/.env')) {
+    $dotenv->populate([
+        'APP_ENV' => $_ENV['APP_ENV'] ?? 'local',
+    ]);
+}
+
+Config::loadAll(dirname(__DIR__) . '/config');
+
+$timezone = Config::get('app.timezone', 'UTC');
+date_default_timezone_set($timezone);
+
+Database::boot();
+SessionManager::start();
+Logger::initialize();
+
+if (! SessionManager::has('user')) {
+    $rememberMeController = new \App\Controllers\Auth\RememberMeController();
+    $rememberMeController->restore();
+}
+
+$app = new App(new Router());
+return $app;

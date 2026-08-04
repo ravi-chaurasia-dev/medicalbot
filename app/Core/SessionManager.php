@@ -4,25 +4,32 @@ declare(strict_types=1);
 
 namespace App\Core;
 
-final class Session
+final class SessionManager
 {
     public static function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
-            $name = Config::get('app.session.name', 'mediai_session');
-            session_name($name);
+            $config = Config::get('app.session', []);
+            $cookieName = $config['cookie_name'] ?? 'mediai_session';
+            $lifetime = $config['lifetime'] ?? 120;
+            $secure = $config['secure'] ?? false;
+            $sameSite = $config['same_site'] ?? 'Lax';
+
+            session_name($cookieName);
             session_set_cookie_params([
-                'lifetime' => (int) Config::get('app.session.lifetime', 120),
+                'lifetime' => $lifetime,
                 'path' => '/',
-                'secure' => !empty($_SERVER['HTTPS']),
+                'domain' => '',
+                'secure' => $secure,
                 'httponly' => true,
-                'samesite' => 'Lax',
+                'samesite' => $sameSite,
             ]);
+
             session_start();
         }
     }
 
-    public static function put(string $key, mixed $value): void
+    public static function set(string $key, mixed $value): void
     {
         $_SESSION[$key] = $value;
     }
@@ -34,22 +41,17 @@ final class Session
 
     public static function has(string $key): bool
     {
-        return array_key_exists($key, $_SESSION);
+        return isset($_SESSION[$key]);
     }
 
-    public static function forget(string $key): void
+    public static function remove(string $key): void
     {
         unset($_SESSION[$key]);
     }
 
-    public static function flush(): void
-    {
-        $_SESSION = [];
-    }
-
     public static function destroy(): void
     {
-        self::flush();
+        $_SESSION = [];
         session_destroy();
     }
 

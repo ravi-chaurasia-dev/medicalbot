@@ -1,10 +1,10 @@
 vendor/
 .env
-.env.local
-.idea/
-.vscode/
-storage/logs/*.log
-storage/cache/*
-*.cache
+.phpunit.result.cache
+/node_modules/
+*.log
+coverage/
 .DS_Store
-phpunit.xml
+storage/logs/*.log
+public/uploads/*
+!public/uploads/.gitkeep

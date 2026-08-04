@@ -9,47 +9,51 @@ use PDOException;
 
 final class Database
 {
-    private static ?Database $instance = null;
+    private static ?PDO $instance = null;
 
-    private PDO $connection;
-
-    private function __construct()
+    public static function boot(): void
     {
-        $config = Config::get('database.connections.mysql');
+        if (self::$instance !== null) {
+            return;
+        }
+
+        $config = Config::get('database.connections.mysql', []);
+
+        if ($config === []) {
+            throw new \RuntimeException('MySQL database configuration is missing.');
+        }
 
         $dsn = sprintf(
-            'mysql:host=%s;port=%s;dbname=%s;charset=%s',
+            'mysql:host=%s;port=%d;dbname=%s;charset=%s',
             $config['host'],
             $config['port'],
             $config['database'],
             $config['charset']
         );
 
-        $options = [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false,
-            PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
-        ];
-
         try {
-            $this->connection = new PDO($dsn, $config['username'], $config['password'], $options);
-        } catch (PDOException $e) {
-            throw new PDOException('Database connection failed: ' . $e->getMessage());
+            self::$instance = new PDO(
+                $dsn,
+                $config['username'],
+                $config['password'],
+                $config['options']
+            );
+        } catch (PDOException $exception) {
+            throw new \RuntimeException('Database connection failed: ' . $exception->getMessage(), 0, $exception);
         }
     }
 
-    public static function getInstance(): self
+    public static function getConnection(): PDO
     {
         if (self::$instance === null) {
-            self::$instance = new self();
+            self::boot();
         }
 
         return self::$instance;
     }
 
-    public static function connection(): PDO
+    public static function disconnect(): void
     {
-        return self::getInstance()->connection;
+        self::$instance = null;
     }
 }
