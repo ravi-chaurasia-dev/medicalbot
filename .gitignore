@@ -1,0 +1,10 @@
+vendor/
+.env
+.env.local
+.idea/
+.vscode/
+storage/logs/*.log
+storage/cache/*
+*.cache
+.DS_Store
+phpunit.xml
