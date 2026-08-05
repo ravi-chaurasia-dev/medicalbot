@@ -15,10 +15,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $dotenv = Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->safeLoad();
 
-if (file_exists(dirname(__DIR__) . '/.env')) {
-    $dotenv->populate([
-        'APP_ENV' => $_ENV['APP_ENV'] ?? 'local',
-    ]);
+if (! isset($_ENV['APP_ENV'])) {
+    $_ENV['APP_ENV'] = $_SERVER['APP_ENV'] = 'local';
 }
 
 Config::loadAll(dirname(__DIR__) . '/config');
@@ -26,7 +24,6 @@ Config::loadAll(dirname(__DIR__) . '/config');
 $timezone = Config::get('app.timezone', 'UTC');
 date_default_timezone_set($timezone);
 
-Database::boot();
 SessionManager::start();
 Logger::initialize();
 

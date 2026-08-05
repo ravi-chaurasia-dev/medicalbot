@@ -8,11 +8,16 @@ use PDO;
 
 abstract class BaseController
 {
-    protected PDO $db;
+    protected ?PDO $db = null;
 
     public function __construct()
     {
-        $this->db = Database::getConnection();
+        // Lazy load database connection only when needed.
+    }
+
+    protected function db(): PDO
+    {
+        return $this->db ??= Database::getConnection();
     }
 
     protected function view(string $template, array $data = [], ?string $layout = 'app'): string

@@ -9,24 +9,29 @@ use PDOStatement;
 
 abstract class BaseModel
 {
-    protected PDO $db;
+    protected ?PDO $db = null;
     protected string $table;
 
     public function __construct()
     {
-        $this->db = Database::getConnection();
+        // Lazy load database connection only when needed.
+    }
+
+    protected function db(): PDO
+    {
+        return $this->db ??= Database::getConnection();
     }
 
     public function all(string $orderBy = 'id DESC'): array
     {
         $query = sprintf('SELECT * FROM %s ORDER BY %s', $this->table, $orderBy);
-        $statement = $this->db->query($query);
+        $statement = $this->db()->query($query);
         return $statement->fetchAll();
     }
 
     public function findById(int $id): ?array
     {
-        $statement = $this->db->prepare(sprintf('SELECT * FROM %s WHERE id = :id LIMIT 1', $this->table));
+        $statement = $this->db()->prepare(sprintf('SELECT * FROM %s WHERE id = :id LIMIT 1', $this->table));
         $statement->execute(['id' => $id]);
         $result = $statement->fetch();
         return $result === false ? null : $result;
@@ -36,7 +41,7 @@ abstract class BaseModel
     {
         $columns = array_keys($data);
         $placeholders = array_map(static fn (string $column): string => ':' . $column, $columns);
-        $statement = $this->db->prepare(sprintf(
+        $statement = $this->db()->prepare(sprintf(
             'INSERT INTO %s (%s) VALUES (%s)',
             $this->table,
             implode(', ', $columns),
@@ -55,7 +60,7 @@ abstract class BaseModel
         }
 
         $data['id'] = $id;
-        $statement = $this->db->prepare(sprintf(
+        $statement = $this->db()->prepare(sprintf(
             'UPDATE %s SET %s WHERE id = :id',
             $this->table,
             implode(', ', $fields)
@@ -66,13 +71,13 @@ abstract class BaseModel
 
     public function delete(int $id): bool
     {
-        $statement = $this->db->prepare(sprintf('DELETE FROM %s WHERE id = :id', $this->table));
+        $statement = $this->db()->prepare(sprintf('DELETE FROM %s WHERE id = :id', $this->table));
         return $statement->execute(['id' => $id]);
     }
 
     protected function query(string $sql, array $params = []): PDOStatement
     {
-        $statement = $this->db->prepare($sql);
+        $statement = $this->db()->prepare($sql);
         $statement->execute($params);
         return $statement;
     }

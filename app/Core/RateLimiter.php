@@ -8,7 +8,7 @@ final class RateLimiter
 {
     private const STORAGE = __DIR__ . '/../../storage/rate_limit.json';
 
-    public static function checkRequest(string $key = null, int $max = 100, int $windowSeconds = 60): void
+    public static function checkRequest(?string $key = null, int $max = 100, int $windowSeconds = 60): void
     {
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
         $identifier = $key ?? $ip;
