@@ -44,6 +44,7 @@ final class ForgotPasswordController extends BaseController
 
         if (! Validator::email($email)) {
             $message = 'Please provide a valid email address.';
+            SessionManager::set('form_data', ['email' => $email]);
             Flash::set('error', $message, 'danger');
             if ($this->isAjaxRequest()) {
                 $this->json(['success' => false, 'message' => $message]);

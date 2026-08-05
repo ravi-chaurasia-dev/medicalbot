@@ -30,6 +30,12 @@ Database::boot();
 SessionManager::start();
 Logger::initialize();
 
+// Apply global security headers
+\App\Core\Security::apply();
+
+// Basic rate limiting
+\App\Core\RateLimiter::checkRequest();
+
 if (! SessionManager::has('user')) {
     $rememberMeController = new \App\Controllers\Auth\RememberMeController();
     $rememberMeController->restore();

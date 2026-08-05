@@ -4,12 +4,14 @@
         <p class="mb-0">Enter your email to receive a reset link.</p>
     </div>
 
-    <form method="post" action="/forgot-password" class="needs-validation" novalidate>
+    <?php $formData = $_SESSION['form_data'] ?? []; unset($_SESSION['form_data']); ?>
+
+    <form method="post" action="/forgot-password" class="needs-validation ajax-form" data-ajax="true" novalidate>
         <?= csrf_field() ?>
 
         <div class="mb-3">
             <label for="email" class="form-label">Email address</label>
-            <input type="email" id="email" name="email" class="form-control" required>
+            <input type="email" id="email" name="email" class="form-control" value="<?= htmlspecialchars($formData['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>" required>
         </div>
 
         <button type="submit" class="btn btn-primary w-100">Send reset link</button>

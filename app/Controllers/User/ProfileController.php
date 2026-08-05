@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace App\Controllers\User;
 
 use App\Core\BaseController;
+use App\Core\CSRF;
 use App\Core\Flash;
 use App\Core\SessionManager;
 use App\Core\Validator;
 use App\Models\UserModel;
 use App\Models\UserProfileModel;
 use App\Models\MedicalHistoryModel;
+use App\Middleware\AuthMiddleware;
 
 final class ProfileController extends BaseController
 {
     public function index(): void
     {
-        $user = SessionManager::get('user');
+        AuthMiddleware::requireAuth();
 
-        if (! isset($user['id'])) {
-            $this->redirect('/login');
-        }
+        $user = SessionManager::get('user');
 
         $profileModel = new UserProfileModel();
         $historyModel = new MedicalHistoryModel();
@@ -35,33 +35,74 @@ final class ProfileController extends BaseController
 
     public function save(): void
     {
-        $user = SessionManager::get('user');
+        AuthMiddleware::requireAuth();
 
-        if (! isset($user['id'])) {
-            $this->redirect('/login');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/profile');
         }
 
-        $userId = (int) $user['id'];
+        if (! CSRF::validate($_POST['_csrf_token'] ?? null)) {
+            Flash::set('error', 'Invalid security token. Please try again.', 'danger');
+            $this->redirect('/profile');
+        }
+
+        $user = SessionManager::get('user');
+        $userId = (int) ($user['id'] ?? 0);
 
         $profileData = [
             'age' => (int) ($_POST['age'] ?? 0),
-            'gender' => (string) ($_POST['gender'] ?? ''),
-            'height' => (string) ($_POST['height'] ?? ''),
-            'weight' => (string) ($_POST['weight'] ?? ''),
-            'blood_group' => (string) ($_POST['blood_group'] ?? ''),
-            'emergency_contact' => (string) ($_POST['emergency_contact'] ?? ''),
-            'address' => (string) ($_POST['address'] ?? ''),
-            'photo_path' => (string) ($_POST['photo_path'] ?? ''),
+            'gender' => in_array($_POST['gender'] ?? '', ['male', 'female', 'other'], true) ? (string) $_POST['gender'] : '',
+            'height' => Validator::sanitize((string) ($_POST['height'] ?? '')),
+            'weight' => Validator::sanitize((string) ($_POST['weight'] ?? '')),
+            'blood_group' => Validator::sanitize((string) ($_POST['blood_group'] ?? '')),
+            'emergency_contact' => Validator::sanitize((string) ($_POST['emergency_contact'] ?? '')),
+            'address' => Validator::sanitize((string) ($_POST['address'] ?? '')),
         ];
 
         $historyData = [
-            'diseases' => (string) ($_POST['diseases'] ?? ''),
-            'surgeries' => (string) ($_POST['surgeries'] ?? ''),
-            'current_medications' => (string) ($_POST['current_medications'] ?? ''),
-            'allergies' => (string) ($_POST['allergies'] ?? ''),
-            'vaccination_history' => (string) ($_POST['vaccination_history'] ?? ''),
-            'family_medical_history' => (string) ($_POST['family_medical_history'] ?? ''),
+            'diseases' => Validator::sanitize((string) ($_POST['diseases'] ?? '')),
+            'surgeries' => Validator::sanitize((string) ($_POST['surgeries'] ?? '')),
+            'current_medications' => Validator::sanitize((string) ($_POST['current_medications'] ?? '')),
+            'allergies' => Validator::sanitize((string) ($_POST['allergies'] ?? '')),
+            'vaccination_history' => Validator::sanitize((string) ($_POST['vaccination_history'] ?? '')),
+            'family_medical_history' => Validator::sanitize((string) ($_POST['family_medical_history'] ?? '')),
         ];
+
+        $errors = [];
+        $name = Validator::sanitize((string) ($_POST['name'] ?? ''));
+
+        if (! Validator::required($name) || ! Validator::minLength($name, 2)) {
+            $errors[] = 'Full name is required and must be at least 2 characters.';
+        }
+
+        if ($profileData['age'] < 0 || $profileData['age'] > 120) {
+            $errors[] = 'Please enter a valid age.';
+        }
+
+        if ($profileData['blood_group'] !== '' && ! Validator::maxLength($profileData['blood_group'], 10)) {
+            $errors[] = 'Blood group must be 10 characters or fewer.';
+        }
+
+        if ($profileData['emergency_contact'] !== '' && ! Validator::maxLength($profileData['emergency_contact'], 50)) {
+            $errors[] = 'Emergency contact must be 50 characters or fewer.';
+        }
+
+        if (! Validator::maxLength($profileData['height'], 20) || ! Validator::maxLength($profileData['weight'], 20)) {
+            $errors[] = 'Height and weight must be 20 characters or fewer.';
+        }
+
+        if (! Validator::maxLength($profileData['address'], 500)) {
+            $errors[] = 'Address must be 500 characters or fewer.';
+        }
+
+        if (! Validator::maxLength($historyData['diseases'], 1000) || ! Validator::maxLength($historyData['surgeries'], 1000) || ! Validator::maxLength($historyData['current_medications'], 1000) || ! Validator::maxLength($historyData['allergies'], 1000) || ! Validator::maxLength($historyData['vaccination_history'], 1000) || ! Validator::maxLength($historyData['family_medical_history'], 1000)) {
+            $errors[] = 'Medical history fields must be 1000 characters or fewer.';
+        }
+
+        if ($errors !== []) {
+            Flash::set('error', implode(' ', $errors), 'danger');
+            $this->redirect('/profile');
+        }
 
         $profileModel = new UserProfileModel();
         $historyModel = new MedicalHistoryModel();
@@ -70,12 +111,12 @@ final class ProfileController extends BaseController
 
         $userModel = new UserModel();
         $userModel->updateUser($userId, [
-            'name' => Validator::sanitize((string) ($_POST['name'] ?? $user['name'])),
+            'name' => $name,
         ]);
 
         SessionManager::set('user', [
             'id' => $userId,
-            'name' => Validator::sanitize((string) ($_POST['name'] ?? $user['name'])),
+            'name' => $name,
             'email' => $user['email'],
             'role' => $user['role'],
         ]);
@@ -86,7 +127,14 @@ final class ProfileController extends BaseController
 
     public function uploadPhoto(): void
     {
+        AuthMiddleware::requireAuth();
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/profile');
+        }
+
+        if (! CSRF::validate($_POST['_csrf_token'] ?? null)) {
+            Flash::set('error', 'Invalid security token. Please try again.', 'danger');
             $this->redirect('/profile');
         }
 

@@ -1,0 +1,36 @@
+.hospital-map {
+    width: 100%;
+    height: 420px;
+    border-radius: 1rem;
+    border: 1px solid rgba(19, 35, 54, 0.1);
+}
+
+.hospital-result-card {
+    background: #fff;
+    border: 1px solid rgba(19, 35, 54, 0.08);
+    border-radius: 1rem;
+}
+
+.search-panel .form-label {
+    font-weight: 600;
+}
+
+.specialist-recommendation {
+    border-top: 1px solid rgba(19, 35, 54, 0.08);
+    padding-top: 1rem;
+}
+
+.nearby-panel {
+    background: #fff;
+    border: 1px solid rgba(19, 35, 54, 0.08);
+    border-radius: 1rem;
+}
+
+.list-group-item {
+    border: none;
+    padding: 0.85rem 0;
+}
+
+.hospital-results {
+    min-height: 220px;
+}

@@ -61,6 +61,7 @@ final class LoginController extends BaseController
 
         if ($user === null || ! password_verify($password, $user['password_hash'])) {
             $message = 'Invalid credentials.';
+            SessionManager::set('form_data', ['email' => $email]);
             Flash::set('error', $message, 'danger');
             if ($this->isAjaxRequest()) {
                 $this->json(['success' => false, 'message' => $message]);

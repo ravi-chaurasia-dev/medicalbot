@@ -4,7 +4,7 @@
         <p class="mb-0">Your new password must be secure.</p>
     </div>
 
-    <form method="post" action="/reset-password" class="needs-validation" novalidate>
+    <form method="post" action="/reset-password" class="needs-validation ajax-form" data-ajax="true" novalidate>
         <?= csrf_field() ?>
         <input type="hidden" name="token" value="<?= htmlspecialchars($token ?? '', ENT_QUOTES, 'UTF-8') ?>">
 
