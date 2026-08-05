@@ -12,7 +12,7 @@ final class HospitalModel extends BaseModel
 
     public function getAllSpecialties(): array
     {
-        $statement = $this->db->query('SELECT DISTINCT specialty FROM doctors ORDER BY specialty ASC');
+        $statement = $this->db()->query('SELECT DISTINCT specialty FROM doctors ORDER BY specialty ASC');
         return array_column($statement->fetchAll(), 'specialty');
     }
 
@@ -66,7 +66,7 @@ final class HospitalModel extends BaseModel
             $sql .= 'rating DESC, name ASC';
         }
 
-        $statement = $this->db->prepare($sql);
+        $statement = $this->db()->prepare($sql);
         $statement->execute($params);
 
         return $statement->fetchAll();

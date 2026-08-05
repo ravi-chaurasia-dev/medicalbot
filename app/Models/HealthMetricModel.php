@@ -13,7 +13,7 @@ final class HealthMetricModel extends BaseModel
 
     public function getMetricsByUserId(int $userId, string $type, int $limit = 50): array
     {
-        $statement = $this->db->prepare('SELECT * FROM health_metrics WHERE user_id = :user_id AND metric_type = :metric_type ORDER BY recorded_at DESC LIMIT :limit');
+        $statement = $this->db()->prepare('SELECT * FROM health_metrics WHERE user_id = :user_id AND metric_type = :metric_type ORDER BY recorded_at DESC LIMIT :limit');
         $statement->bindValue(':user_id', $userId, 
             
             
@@ -34,7 +34,7 @@ final class HealthMetricModel extends BaseModel
 
     public function getRecentMetrics(int $userId, int $limit = 10): array
     {
-        $statement = $this->db->prepare('SELECT * FROM health_metrics WHERE user_id = :user_id ORDER BY recorded_at DESC LIMIT :limit');
+        $statement = $this->db()->prepare('SELECT * FROM health_metrics WHERE user_id = :user_id ORDER BY recorded_at DESC LIMIT :limit');
         $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
         $statement->execute();

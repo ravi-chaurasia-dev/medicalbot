@@ -12,7 +12,7 @@ final class LabReportValueModel extends BaseModel
 
     public function getValuesByReportId(int $reportId): array
     {
-        $statement = $this->db->prepare('SELECT * FROM lab_report_values WHERE report_id = :report_id ORDER BY id ASC');
+        $statement = $this->db()->prepare('SELECT * FROM lab_report_values WHERE report_id = :report_id ORDER BY id ASC');
         $statement->execute(['report_id' => $reportId]);
         return $statement->fetchAll();
     }
@@ -22,7 +22,7 @@ final class LabReportValueModel extends BaseModel
         $this->deleteByReportId($reportId);
 
         $sql = 'INSERT INTO lab_report_values (report_id, analyte, value, unit, status, normal_range, note, created_at, updated_at) VALUES (:report_id, :analyte, :value, :unit, :status, :normal_range, :note, NOW(), NOW())';
-        $statement = $this->db->prepare($sql);
+        $statement = $this->db()->prepare($sql);
 
         foreach ($values as $value) {
             $statement->execute([
@@ -41,7 +41,7 @@ final class LabReportValueModel extends BaseModel
 
     public function deleteByReportId(int $reportId): bool
     {
-        $statement = $this->db->prepare('DELETE FROM lab_report_values WHERE report_id = :report_id');
+        $statement = $this->db()->prepare('DELETE FROM lab_report_values WHERE report_id = :report_id');
         return $statement->execute(['report_id' => $reportId]);
     }
 }

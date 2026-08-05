@@ -15,7 +15,7 @@ final class Security
         // XSS protection
         header('X-XSS-Protection: 1; mode=block');
         // Content Security Policy (basic)
-        $csp = "default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; connect-src 'self' https:;";
+        $csp = "default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;";
         header('Content-Security-Policy: ' . $csp);
         // Force secure transport in production
         $env = Config::get('app.env', 'production');

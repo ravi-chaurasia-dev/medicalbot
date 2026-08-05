@@ -13,7 +13,7 @@ final class ChatMessageModel extends BaseModel
 
     public function getRecentMessagesByUserId(int $userId, int $limit = 10): array
     {
-        $statement = $this->db->prepare('SELECT * FROM chat_messages WHERE user_id = :user_id ORDER BY created_at DESC LIMIT :limit');
+        $statement = $this->db()->prepare('SELECT * FROM chat_messages WHERE user_id = :user_id ORDER BY created_at DESC LIMIT :limit');
         $statement->bindValue(':user_id', $userId, PDO::PARAM_INT);
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
         $statement->execute();
@@ -22,7 +22,7 @@ final class ChatMessageModel extends BaseModel
 
     public function getRecentMessages(int $limit = 50): array
     {
-        $statement = $this->db->prepare('SELECT cm.*, u.name AS user_name FROM chat_messages cm LEFT JOIN users u ON cm.user_id = u.id ORDER BY cm.created_at DESC LIMIT :limit');
+        $statement = $this->db()->prepare('SELECT cm.*, u.name AS user_name FROM chat_messages cm LEFT JOIN users u ON cm.user_id = u.id ORDER BY cm.created_at DESC LIMIT :limit');
         $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
         $statement->execute();
         return $statement->fetchAll();

@@ -20,7 +20,7 @@ final class ResetPasswordController extends BaseController
         }
 
         $token = $_GET['token'] ?? '';
-        $resetRow = $this->db->prepare('SELECT * FROM password_resets WHERE token = :token AND expires_at > NOW() LIMIT 1');
+        $resetRow = $this->db()->prepare('SELECT * FROM password_resets WHERE token = :token AND expires_at > NOW() LIMIT 1');
         $resetRow->execute(['token' => $token]);
         $record = $resetRow->fetch();
 
@@ -63,7 +63,7 @@ final class ResetPasswordController extends BaseController
             $this->redirect('/reset-password?token=' . urlencode($token));
         }
 
-        $resetStmt = $this->db->prepare('SELECT * FROM password_resets WHERE token = :token AND expires_at > NOW() LIMIT 1');
+        $resetStmt = $this->db()->prepare('SELECT * FROM password_resets WHERE token = :token AND expires_at > NOW() LIMIT 1');
         $resetStmt->execute(['token' => $token]);
         $reset = $resetStmt->fetch();
 
@@ -78,7 +78,7 @@ final class ResetPasswordController extends BaseController
 
         $userModel = new UserModel();
         $userModel->setPassword((int) $reset['user_id'], $password);
-        $this->db->prepare('DELETE FROM password_resets WHERE token = :token')->execute(['token' => $token]);
+        $this->db()->prepare('DELETE FROM password_resets WHERE token = :token')->execute(['token' => $token]);
 
         $message = 'Your password has been reset successfully.';
         Flash::set('success', $message, 'success');

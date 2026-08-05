@@ -49,7 +49,7 @@ abstract class BaseModel
         ));
 
         $statement->execute($data);
-        return (int) $this->db->lastInsertId();
+        return (int) $this->db()->lastInsertId();
     }
 
     public function update(int $id, array $data): bool

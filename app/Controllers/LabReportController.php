@@ -139,7 +139,7 @@ final class LabReportController extends BaseController
         $this->redirect('/lab-reports/view?id=' . $reportId);
     }
 
-    public function view(): void
+    public function show(): string
     {
         AuthMiddleware::requireAuth();
 

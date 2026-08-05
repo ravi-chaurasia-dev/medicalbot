@@ -57,7 +57,7 @@ final class ForgotPasswordController extends BaseController
 
         if ($user !== null) {
             $token = bin2hex(random_bytes(32));
-            $this->db->prepare('INSERT INTO password_resets (user_id, token, expires_at, created_at) VALUES (:user_id, :token, DATE_ADD(NOW(), INTERVAL 1 HOUR), NOW()) ON DUPLICATE KEY UPDATE token = VALUES(token), expires_at = VALUES(expires_at), created_at = NOW()')->execute([
+            $this->db()->prepare('INSERT INTO password_resets (user_id, token, expires_at, created_at) VALUES (:user_id, :token, DATE_ADD(NOW(), INTERVAL 1 HOUR), NOW()) ON DUPLICATE KEY UPDATE token = VALUES(token), expires_at = VALUES(expires_at), created_at = NOW()')->execute([
                 'user_id' => (int) $user['id'],
                 'token' => $token,
             ]);

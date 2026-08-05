@@ -91,7 +91,7 @@ final class RegisterController extends BaseController
         ]);
 
         $token = bin2hex(random_bytes(32));
-        $this->db->prepare('INSERT INTO email_verifications (user_id, token, expires_at, created_at) VALUES (:user_id, :token, DATE_ADD(NOW(), INTERVAL 1 DAY), NOW())')->execute([
+        $this->db()->prepare('INSERT INTO email_verifications (user_id, token, expires_at, created_at) VALUES (:user_id, :token, DATE_ADD(NOW(), INTERVAL 1 DAY), NOW())')->execute([
             'user_id' => $userId,
             'token' => $token,
         ]);

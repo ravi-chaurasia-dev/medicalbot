@@ -13,6 +13,7 @@ return [
     '/dashboard' => ['App\\Controllers\\DashboardController', 'index'],
     '/health' => ['App\\Controllers\\HealthController', 'index'],
     '/ai-assistant' => ['App\\Controllers\\AssistantController', 'index'],
+    '/assistant' => ['App\\Controllers\\AssistantController', 'index'],
     '/profile' => ['App\\Controllers\\User\\ProfileController', 'index'],
     '/profile/save' => ['App\\Controllers\\User\\ProfileController', 'save'],
     '/profile/upload-photo' => ['App\\Controllers\\User\\ProfileController', 'uploadPhoto'],
@@ -24,8 +25,9 @@ return [
     '/hospital-finder/nearby-services' => ['App\\Controllers\\HospitalFinderController', 'nearbyServices'],
 
     '/lab-reports' => ['App\\Controllers\\LabReportController', 'index'],
+    '/lab-report' => ['App\\Controllers\\LabReportController', 'index'],
     '/lab-reports/upload' => ['App\\Controllers\\LabReportController', 'upload'],
-    '/lab-reports/view' => ['App\\Controllers\\LabReportController', 'view'],
+    '/lab-reports/view' => ['App\\Controllers\\LabReportController', 'show'],
     '/lab-reports/download' => ['App\\Controllers\\LabReportController', 'download'],
     '/lab-reports/delete' => ['App\\Controllers\\LabReportController', 'delete'],
     '/lab-reports/compare' => ['App\\Controllers\\LabReportController', 'compare'],

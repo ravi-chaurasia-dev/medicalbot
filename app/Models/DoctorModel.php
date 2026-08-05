@@ -16,7 +16,7 @@ final class DoctorModel extends BaseModel
             return [];
         }
 
-        $statement = $this->db->prepare('SELECT d.*, h.name AS hospital_name, h.phone AS hospital_phone FROM doctors d JOIN hospitals h ON d.hospital_id = h.id WHERE d.specialty = :specialty ORDER BY d.last_name ASC');
+        $statement = $this->db()->prepare('SELECT d.*, h.name AS hospital_name, h.phone AS hospital_phone FROM doctors d JOIN hospitals h ON d.hospital_id = h.id WHERE d.specialty = :specialty ORDER BY d.last_name ASC');
         $statement->execute(['specialty' => $specialty]);
         return $statement->fetchAll();
     }
@@ -43,7 +43,7 @@ final class DoctorModel extends BaseModel
 
         $sql .= ' ORDER BY d.last_name ASC';
 
-        $statement = $this->db->prepare($sql);
+        $statement = $this->db()->prepare($sql);
         $statement->execute($params);
 
         return $statement->fetchAll();

@@ -12,7 +12,7 @@ final class LabReportModel extends BaseModel
 
     public function findById(int $id): ?array
     {
-        $statement = $this->db->prepare('SELECT * FROM lab_reports WHERE id = :id LIMIT 1');
+        $statement = $this->db()->prepare('SELECT * FROM lab_reports WHERE id = :id LIMIT 1');
         $statement->execute(['id' => $id]);
         $result = $statement->fetch();
         return $result === false ? null : $result;
@@ -44,7 +44,7 @@ final class LabReportModel extends BaseModel
         }
 
         $sql .= ' ORDER BY created_at DESC';
-        $statement = $this->db->prepare($sql);
+        $statement = $this->db()->prepare($sql);
         $statement->execute($params);
         return $statement->fetchAll();
     }

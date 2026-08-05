@@ -12,7 +12,7 @@ final class MedicalHistoryModel extends BaseModel
 
     public function findByUserId(int $userId): ?array
     {
-        $statement = $this->db->prepare('SELECT * FROM medical_histories WHERE user_id = :user_id LIMIT 1');
+        $statement = $this->db()->prepare('SELECT * FROM medical_histories WHERE user_id = :user_id LIMIT 1');
         $statement->execute(['user_id' => $userId]);
         $result = $statement->fetch();
         return $result === false ? null : $result;
@@ -33,7 +33,7 @@ final class MedicalHistoryModel extends BaseModel
 
             $fields[] = 'updated_at = NOW()';
             $sql = 'UPDATE medical_histories SET ' . implode(', ', $fields) . ' WHERE user_id = :user_id';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->db()->prepare($sql);
             return $statement->execute($params);
         }
 
@@ -44,7 +44,7 @@ final class MedicalHistoryModel extends BaseModel
 
         $columns = array_keys($payload);
         $placeholders = array_map(static fn (string $column): string => ':' . $column, $columns);
-        $statement = $this->db->prepare(sprintf(
+        $statement = $this->db()->prepare(sprintf(
             'INSERT INTO medical_histories (%s) VALUES (%s)',
             implode(', ', $columns),
             implode(', ', $placeholders)

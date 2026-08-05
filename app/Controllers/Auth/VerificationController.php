@@ -19,7 +19,7 @@ final class VerificationController extends BaseController
             $this->redirect('/login');
         }
 
-        $verification = $this->db->prepare('SELECT * FROM email_verifications WHERE token = :token AND expires_at > NOW() LIMIT 1');
+        $verification = $this->db()->prepare('SELECT * FROM email_verifications WHERE token = :token AND expires_at > NOW() LIMIT 1');
         $verification->execute(['token' => $token]);
         $record = $verification->fetch();
 
@@ -30,7 +30,7 @@ final class VerificationController extends BaseController
 
         $userModel = new UserModel();
         $userModel->verifyEmail((int) $record['user_id']);
-        $this->db->prepare('DELETE FROM email_verifications WHERE token = :token')->execute(['token' => $token]);
+        $this->db()->prepare('DELETE FROM email_verifications WHERE token = :token')->execute(['token' => $token]);
 
         Flash::set('success', 'Your email has been verified successfully. You may now log in.', 'success');
         $this->redirect('/login');

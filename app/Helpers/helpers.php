@@ -23,19 +23,55 @@ if (! function_exists('env')) {
     }
 }
 
+if (! function_exists('detect_base_path')) {
+    function detect_base_path(): string
+    {
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+
+        if ($scriptName !== '') {
+            $scriptDir = dirname($scriptName);
+            if ($scriptDir !== '' && $scriptDir !== '/' && str_starts_with($requestUri, $scriptDir)) {
+                return rtrim($scriptDir, '/');
+            }
+
+            if (str_starts_with($requestUri, $scriptName)) {
+                $basePath = $scriptName;
+                if (str_ends_with($basePath, '/index.php')) {
+                    $basePath = dirname($basePath);
+                }
+
+                return rtrim($basePath, '/');
+            }
+        }
+
+        return '';
+    }
+}
+
+if (! function_exists('base_url')) {
+    function base_url(): string
+    {
+        $scheme = (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $basePath = detect_base_path();
+        return $scheme . '://' . $host . ($basePath !== '' ? $basePath : '');
+    }
+}
+
 if (! function_exists('asset')) {
     function asset(string $path): string
     {
-        $base = rtrim(Config::get('app.url', 'http://localhost'), '/');
-        return $base . '/assets/' . ltrim($path, '/');
+        return rtrim(base_url(), '/') . '/assets/' . ltrim($path, '/');
     }
 }
 
 if (! function_exists('url')) {
     function url(string $path = '/'): string
     {
-        $base = rtrim(Config::get('app.url', 'http://localhost'), '/');
-        return $base . '/' . ltrim($path, '/');
+        $base = rtrim(base_url(), '/');
+        $normalizedPath = '/' . ltrim($path, '/');
+        return $base . $normalizedPath;
     }
 }
 

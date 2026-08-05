@@ -42,7 +42,7 @@ final class SymptomReportModel extends BaseModel
 
     public function getReportsByUserId(int $userId): array
     {
-        $statement = $this->db->prepare('SELECT * FROM symptom_reports WHERE user_id = :user_id ORDER BY created_at DESC');
+        $statement = $this->db()->prepare('SELECT * FROM symptom_reports WHERE user_id = :user_id ORDER BY created_at DESC');
         $statement->execute(['user_id' => $userId]);
         $reports = $statement->fetchAll();
 

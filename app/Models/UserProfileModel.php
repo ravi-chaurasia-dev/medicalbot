@@ -12,7 +12,7 @@ final class UserProfileModel extends BaseModel
 
     public function findByUserId(int $userId): ?array
     {
-        $statement = $this->db->prepare('SELECT * FROM user_profiles WHERE user_id = :user_id LIMIT 1');
+        $statement = $this->db()->prepare('SELECT * FROM user_profiles WHERE user_id = :user_id LIMIT 1');
         $statement->execute(['user_id' => $userId]);
         $result = $statement->fetch();
         return $result === false ? null : $result;
@@ -33,7 +33,7 @@ final class UserProfileModel extends BaseModel
 
             $fields[] = 'updated_at = NOW()';
             $sql = 'UPDATE user_profiles SET ' . implode(', ', $fields) . ' WHERE user_id = :user_id';
-            $statement = $this->db->prepare($sql);
+            $statement = $this->db()->prepare($sql);
             return $statement->execute($params);
         }
 
@@ -45,7 +45,7 @@ final class UserProfileModel extends BaseModel
         $columns = array_keys($payload);
         $placeholders = array_map(static fn (string $column): string => ':' . $column, $columns);
 
-        $statement = $this->db->prepare(sprintf(
+        $statement = $this->db()->prepare(sprintf(
             'INSERT INTO user_profiles (%s) VALUES (%s)',
             implode(', ', $columns),
             implode(', ', $placeholders)
