@@ -39,8 +39,42 @@ final class Router
 
     private function normalizeUri(string $uri): string
     {
-        $uri = trim(parse_url($uri, PHP_URL_PATH) ?: '/', '/');
-        return '/' . ($uri === '' ? '' : $uri);
+        $path = parse_url($uri, PHP_URL_PATH) ?: '/';
+        $basePath = $this->detectBasePath();
+
+        if ($basePath !== '' && str_starts_with($path, $basePath)) {
+            $path = substr($path, strlen($basePath));
+        }
+
+        if (str_starts_with($path, '/index.php')) {
+            $path = substr($path, strlen('/index.php'));
+        }
+
+        $path = trim($path, '/');
+        return '/' . ($path === '' ? '' : $path);
+    }
+
+    private function detectBasePath(): string
+    {
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        $scriptDir = dirname($scriptName);
+        $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
+
+        $basePath = '';
+
+        if ($scriptDir !== '' && $scriptDir !== '/' && str_starts_with($requestPath, $scriptDir)) {
+            $basePath = $scriptDir;
+        }
+
+        if ($basePath === '' && $scriptName !== '' && str_starts_with($requestPath, $scriptName)) {
+            $basePath = $scriptName;
+        }
+
+        if (str_ends_with($basePath, '/index.php')) {
+            $basePath = dirname($basePath);
+        }
+
+        return rtrim($basePath, '/');
     }
 
     private function callController(string $controller, string $method): void
